@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Classify Corpus by ViT5</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px;
+        }
+
+        .half-container {
+            width: 45%;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #corpusInput {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #predictButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #predictButton:hover {
+            background-color: #45a049;
+        }
+
+        #clearButton {
+            background-color: #afabab;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #clearButton:hover {
+            opacity: 0.4;
+        }
+
+        #predictionResult {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #050ab0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2 style="text-align: center">Flask Python</h2>
+    <h1 style="text-align: center">Phân loại mức độ</h1>
+
+    <div class="container">
+        <div class="half-container" id="inputContainer">
+            <p>Nhập văn bản</p>
+            <textarea id="corpusInput" rows="4" cols="50"></textarea>
+            <button id="predictButton">Predict</button>
+            <button id="clearButton">Clear</button>
+        </div>
+        <div class="half-container" id="resultContainer">
+            <h2> Phân loại mức độ </h2>
+            <p>Tích cực / Trung tính / Tiêu cực của văn bản:</p>
+            <h3 id="predictionResult"></h3>
+        </div>
+    </div>
+
+    <script>
+        const predictButton = document.getElementById("predictButton");
+        const corpusInput = document.getElementById("corpusInput");
+        const predictionResult = document.getElementById("predictionResult");
+        const clearButton = document.getElementById("clearButton");
+
+        predictButton.addEventListener("click", async () => {
+            const corpus = corpusInput.value.trim();
+            if (!corpus) {
+                alert("Please enter some text.");
+                return;
+            }
+            const data = { corpus: corpus };
+            const response = await fetch("/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            console.log(result);
+            predictionResult.textContent = result.classification;
+        });
+
+        clearButton.addEventListener("click", () => {
+            corpusInput.value = ""; // Clear input
+            predictionResult.textContent = ""; // Clear output
+        });
+    </script>
+</body>
+
+</html>

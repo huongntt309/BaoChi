@@ -1,0 +1,3 @@
+pip install transformers[torch]
+pip install flask
+pip install waitress
