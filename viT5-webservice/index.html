@@ -9,6 +9,8 @@
     <style>
         body {
             font-family: sans-serif;
+            background-color: #f3f3f3;
+            /* Added background color to the body */
         }
 
         .container {
@@ -22,6 +24,8 @@
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            background-color: #fff;
+            /* Added background color to the half-container */
         }
 
         #corpusInput {
@@ -58,43 +62,66 @@
             opacity: 0.4;
         }
 
-        #predictionResult {
-            margin-top: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #050ab0;
-            border: 1px solid #ccc;
+        #resultContainer {
+            background-color: #f9f9f9;
+            padding: 20px;
             border-radius: 5px;
-            padding: 10px;
+        }
+
+        #resultContainer h2 {
+            margin-bottom: 10px;
+        }
+
+        #resultContainer p {
+            margin-bottom: 5px;
+        }
+
+        #resultContainer h3 {
+            color: #050ab0;
+            margin-top: 5px;
         }
     </style>
+
 </head>
 
 <body>
-    <h2 style="text-align: center">Flask Python</h2>
-    <h1 style="text-align: center">Phân loại mức độ</h1>
+    <h1 style="text-align: center">Phân loại văn bản Tài nguyên Môi trường</h1>
 
     <div class="container">
         <div class="half-container" id="inputContainer">
-            <p>Nhập văn bản</p>
-            <textarea id="corpusInput" rows="4" cols="50"></textarea>
+            <h2>Nhập văn bản</h2>
+            <textarea id="corpusInput" rows="20" cols="50"></textarea>
             <button id="predictButton">Predict</button>
             <button id="clearButton">Clear</button>
         </div>
         <div class="half-container" id="resultContainer">
-            <h2> Phân loại mức độ </h2>
-            <p>Tích cực / Trung tính / Tiêu cực của văn bản:</p>
-            <h3 id="predictionResult"></h3>
+            <h2>Phân loại </h2>
+            <br />
+            <p>Mức độ:</p>
+            <h3 class="resultLine" id="predictionMucDo"></h3>
+            <br />
+            <p>Chuyên môn:</p>
+            <h3 class="resultLine" id="predictionChuyenMon"></h3>
+            <br />
+            <p>Lĩnh Vực:</p>
+            <h3 class="resultLine" id="predictionLinhVuc"></h3>
+            <div id="loadingIndicator" style="display: none;">Loading...</div>
         </div>
     </div>
 
     <script>
         const predictButton = document.getElementById("predictButton");
         const corpusInput = document.getElementById("corpusInput");
-        const predictionResult = document.getElementById("predictionResult");
+        const predictionMucDo = document.getElementById("predictionMucDo");
+        const predictionChuyenMon = document.getElementById("predictionChuyenMon");
+        const predictionLinhVuc = document.getElementById("predictionLinhVuc");
         const clearButton = document.getElementById("clearButton");
 
         predictButton.addEventListener("click", async () => {
+            // loading 
+            const loadingIndicator = document.getElementById("loadingIndicator");
+            loadingIndicator.style.display = "block";
+
             const corpus = corpusInput.value.trim();
             if (!corpus) {
                 alert("Please enter some text.");
@@ -110,12 +137,19 @@
             });
             const result = await response.json();
             console.log(result);
-            predictionResult.textContent = result.classification;
+
+            loadingIndicator.style.display = "none";
+
+            predictionMucDo.textContent = result.muc_do;
+            predictionChuyenMon.textContent = result.chuyen_mon;
+            predictionLinhVuc.textContent = result.linh_vuc;
         });
 
         clearButton.addEventListener("click", () => {
             corpusInput.value = ""; // Clear input
-            predictionResult.textContent = ""; // Clear output
+            predictionMucDo.textContent = "";
+            predictionChuyenMon.textContent = "";
+            predictionLinhVuc.textContent = "";
         });
     </script>
 </body>

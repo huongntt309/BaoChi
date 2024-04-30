@@ -6,15 +6,19 @@ import os
 
 app = Flask(__name__)
 
-model_predictions = None
+model_muc_do_predictions = None
+model_chm_lv_predictions = None
 tokenizer = None
 # set up functions 
 def setup():
-    # Load the model_predictions
-    global model_predictions
+    # Load 2 model_predictions
+    global model_muc_do_predictions
+    global model_chm_lv_predictions
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    model_path = os.path.join(script_dir, "checkpoint-2740")
-    model_predictions = AutoModelForSeq2SeqLM.from_pretrained(model_path)
+    model_muc_do_path = os.path.join(script_dir, "muc_do-checkpoint-2740")
+    model_chm_lv_path = os.path.join(script_dir, "chm_lv-checkpoint-3820")
+    model_muc_do_predictions = AutoModelForSeq2SeqLM.from_pretrained(model_muc_do_path)
+    model_chm_lv_predictions = AutoModelForSeq2SeqLM.from_pretrained(model_chm_lv_path)
     
     # Load tokenizer
     global tokenizer
@@ -49,10 +53,13 @@ def detect():
     data = request.json
     corpus = data.get('corpus', '')  # Extracting the 'corpus' field from the JSON data
     print("corpus:" , corpus)
-    global model_predictions
-    # Check if model_predictions object is initialized
-    if model_predictions is None:
-        return Response(json.dumps({"error": "Model not initialized"}), mimetype='application/json')
+    global model_muc_do_predictions
+    global model_chm_lv_predictions
+    
+    if model_muc_do_predictions is None:
+        return Response(json.dumps({"error": "Model Muc do not initialized"}), mimetype='application/json')
+    if model_chm_lv_predictions is None:
+        return Response(json.dumps({"error": "Model chuyen mon, linh vuc not initialized"}), mimetype='application/json')
 
     # Perform detection
     max_target_length = 256
@@ -61,17 +68,33 @@ def detect():
     attention_mask = inputs.attention_mask
     
     # model predictions
-    output = model_predictions.generate(
+    output_muc_do = model_muc_do_predictions.generate(
+        input_ids=input_ids,
+        max_length=max_target_length,
+        attention_mask=attention_mask,
+    )
+    
+    # model predictions
+    output_chm_lv = model_chm_lv_predictions.generate(
         input_ids=input_ids,
         max_length=max_target_length,
         attention_mask=attention_mask,
     )
     
     # decode output
-    predicted_text = tokenizer.decode(output[0], skip_special_tokens=True)
-    print("predicted_text:" , predicted_text)
+    predicted_muc_do = tokenizer.decode(output_muc_do[0], skip_special_tokens=True)
+    predicted_chm_lv = tokenizer.decode(output_chm_lv[0], skip_special_tokens=True)
+    predicted_chuyen_mon, predicted_linh_vuc = predicted_chm_lv.split(';')
     
-    result = {"classification": predicted_text}
+    print("predicted_muc_do:" , predicted_muc_do)
+    print("predicted_chuyen_mon:" , predicted_chuyen_mon)
+    print("predicted_linh_vuc:" , predicted_linh_vuc)
+    
+    result = {
+        "muc_do"          : predicted_muc_do,
+        "chuyen_mon"      : predicted_chuyen_mon,
+        "linh_vuc"        : predicted_linh_vuc,
+    }
 
     return Response(json.dumps(result), mimetype='application/json')
 
