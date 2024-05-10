@@ -76,7 +76,7 @@
             margin-bottom: 5px;
         }
 
-        #resultContainer h3 {
+        .resultLine {
             color: #050ab0;
             margin-top: 5px;
         }
@@ -90,6 +90,7 @@
     <div class="container">
         <div class="half-container" id="inputContainer">
             <h2>Nhập văn bản</h2>
+            <textarea id="titleInput" rows="2" cols="50"></textarea>
             <textarea id="corpusInput" rows="20" cols="50"></textarea>
             <button id="predictButton">Predict</button>
             <button id="clearButton">Clear</button>
@@ -99,12 +100,13 @@
             <br />
             <p>Mức độ:</p>
             <h3 class="resultLine" id="predictionMucDo"></h3>
-            <br />
             <p>Chuyên môn:</p>
             <h3 class="resultLine" id="predictionChuyenMon"></h3>
-            <br />
             <p>Lĩnh Vực:</p>
             <h3 class="resultLine" id="predictionLinhVuc"></h3>
+            <br />
+            <h2>Tóm tắt văn bản</h2>
+            <p class="resultLine" id="summarization"></p>
             <div id="loadingIndicator" style="display: none;">Loading...</div>
         </div>
     </div>
@@ -112,22 +114,30 @@
     <script>
         const predictButton = document.getElementById("predictButton");
         const corpusInput = document.getElementById("corpusInput");
+        const titleInput = document.getElementById("titleInput");
         const predictionMucDo = document.getElementById("predictionMucDo");
         const predictionChuyenMon = document.getElementById("predictionChuyenMon");
         const predictionLinhVuc = document.getElementById("predictionLinhVuc");
+        const summarization = document.getElementById("summarization");
         const clearButton = document.getElementById("clearButton");
 
         predictButton.addEventListener("click", async () => {
             // loading 
+            clearOutput();
             const loadingIndicator = document.getElementById("loadingIndicator");
             loadingIndicator.style.display = "block";
 
             const corpus = corpusInput.value.trim();
+            const title = titleInput.value.trim();
             if (!corpus) {
                 alert("Please enter some text.");
                 return;
             }
-            const data = { corpus: corpus };
+            if (!title) {
+                alert("Please enter some text.");
+                return;
+            }
+            const data = { corpus: corpus, title: title };
             const response = await fetch("/predict", {
                 method: "POST",
                 headers: {
@@ -143,14 +153,20 @@
             predictionMucDo.textContent = result.muc_do;
             predictionChuyenMon.textContent = result.chuyen_mon;
             predictionLinhVuc.textContent = result.linh_vuc;
+            summarization.textContent = result.tom_tat;
         });
 
         clearButton.addEventListener("click", () => {
             corpusInput.value = ""; // Clear input
+            clearOutput();
+        });
+
+        function clearOutput() {
             predictionMucDo.textContent = "";
             predictionChuyenMon.textContent = "";
             predictionLinhVuc.textContent = "";
-        });
+            summarization.textContent = "";
+        }
     </script>
 </body>
 
